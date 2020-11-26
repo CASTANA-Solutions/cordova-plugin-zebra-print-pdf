@@ -1,0 +1,23 @@
+{
+  "name": "at.castana.cordova.plugins.zebraprintpdf",
+  "version": "1.0.0",
+  "description": "A cordova plugin for Zebra printer, connected via Bluetooth, to print PDF files.",
+
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CASTANA-Solutions/cordova-plugin-zebra-print-pdf.git"
+  },
+  "keywords": [
+    "cordova",
+    "zebra",
+    "print",
+    "pdf",
+    "bluetooth"
+  ],
+  "author": "Leopold Wurm",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/CASTANA-Solutions/cordova-plugin-zebra-print-pdf/issues"
+  },
+  "homepage": "https://github.com/CASTANA-Solutions/cordova-plugin-zebra-print-pdf#readme"
+}
