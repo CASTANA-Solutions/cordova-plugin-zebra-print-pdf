@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin id="cordova-plugin-zebra-print-pdf" version="0.0.1"
+    xmlns="http://apache.org/cordova/ns/plugins/1.0">
+    <name>Zebra Print Pdf</name>
+    <description>Android Cordova Plugin for Pdf Print on ZEBRA Printers via Bluetooth</description>
+    <license>Apache 2.0</license>
+    <keywords>cordova, zebra, print, pdf, bluetooth</keywords>
+    <js-module name="ZebraPrintPdf" src="www/zebraPrintPdf.js">
+        <clobbers target="cordova.plugins.zebraPrintPdf" />
+    </js-module>
+    <platform name="android">
+        <config-file parent="/*" target="AndroidManifest.xml">
+            <uses-permission android:name="android.permission.BLUETOOTH" />
+            <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+            <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+            <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+        </config-file>
+        <config-file parent="/*" target="config.xml">
+            <feature name="ZebraPrintPdf">
+                <param name="android-package"
+                    value="at.castana.cordova.plugins.zebraprintpdf.ZebraPrintPdf" />
+            </feature>
+        </config-file>
+        <source-file src="" target-dir="libs" />
+
+        <source-file src="src/android/at/castana/cordova/plugins/zebraprint/ZebraPrint.java"
+            target-dir="src/android" />
+    </platform>
+</plugin>

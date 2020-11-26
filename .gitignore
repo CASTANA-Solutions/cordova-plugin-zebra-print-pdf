@@ -1,0 +1,26 @@
+#Template ignore files
+
+*.csproj.user
+*.suo
+*.cache
+Thumbs.db
+
+*.bak
+*.log
+*.swp
+*.user
+
+##########################
+## NPM
+#########################
+node_modules/
+
+##########################
+## Android Studio
+##########################
+.idea/
+*.iml
+
+# OS generated files #
+.DS_Store
+.DS_Store?
