@@ -2,6 +2,7 @@
   "name": "at.castana.cordova.plugins.zebraprintpdf",
   "version": "1.0.0",
   "description": "A cordova plugin for Zebra printer, connected via Bluetooth, to print PDF files.",
+  "displayName": "zebraPrintPdf",
 
   "repository": {
     "type": "git",
