@@ -19,3 +19,7 @@ exports.getPrinterName = function(MACAddress, successCallback, errorCallback) {
 exports.sendFile = function(MACAddress, pdfPath, successCallback, errorCallback) {
     cordova.exec(successCallback, errorCallback, 'ZebraPrintPdf', 'sendFile', [MACAddress, pdfPath]);
 };
+
+exports.getMacAddress = function(printerName, successCallback, errorCallback) {
+    cordova.exec(successCallback, errorCallback, 'ZebraPrintPdf', 'getPrinterMacAddress', [printerName]);
+};

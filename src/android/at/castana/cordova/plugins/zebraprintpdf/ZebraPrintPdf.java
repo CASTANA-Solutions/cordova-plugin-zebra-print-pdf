@@ -94,8 +94,11 @@ public class ZebraPrintPdf extends CordovaPlugin implements DiscoveryHandler {
                 e.printStackTrace();
             }
             return true;
+        } else if (action.equals("getPrinterMacAddress")) {
+            String printerName = args.getString(0);
+            getPrinterMacAddress(printerName);
+            return true;
         }
-
         return false;
     }
 
@@ -392,6 +395,22 @@ public class ZebraPrintPdf extends CordovaPlugin implements DiscoveryHandler {
         }).start();
     }
 
+    private void getPrinterMacAddress(final String printerName) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String macAddress = searchMacAddressForPrintername(printerName);
+
+                if (printerName != null) {
+                    Log.d(LOG_TAG, "Successfully found connected printer with macAddress " + macAddress);
+                    callbackContext.success(macAddress);
+                } else {
+                    callbackContext.error("No printer found. If the problem persists, restart the printer.");
+                }
+            }
+        }).start();
+    }
+
     private void sendEcho(final String echoString) {
         new Thread(new Runnable() {
             @Override
@@ -413,6 +432,25 @@ public class ZebraPrintPdf extends CordovaPlugin implements DiscoveryHandler {
                 Log.d(LOG_TAG, "Paired device found: " + device.getName());
                 if (device.getAddress().equalsIgnoreCase(macAddress)) {
                     return device.getName();
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private String searchMacAddressForPrintername(String printerName) {
+        Log.d(LOG_TAG, "Search for printer " + printerName + " over bluetooth...");
+
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
+
+        if (pairedDevices.size() > 0) {
+            // There are paired devices. Get the name and address of each paired device.
+            for (BluetoothDevice device : pairedDevices) {
+                Log.d(LOG_TAG, "Paired device found: " + device.getName());
+                if (device.getName().equalsIgnoreCase(printerName)) {
+                    return device.getAddress();
                 }
             }
         }
