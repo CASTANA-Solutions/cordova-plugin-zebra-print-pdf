@@ -7,6 +7,9 @@ import android.graphics.BitmapFactory;
 import android.os.Looper;
 import android.util.Base64;
 import android.util.Log;
+import android.content.Context;
+import android.os.Bundle;
+import android.os.Looper;
 
 import com.zebra.sdk.comm.BluetoothConnection;
 import com.zebra.sdk.comm.Connection;
@@ -21,12 +24,19 @@ import com.zebra.sdk.printer.ZebraPrinterLinkOs;
 import com.zebra.sdk.printer.discovery.BluetoothDiscoverer;
 import com.zebra.sdk.printer.discovery.DiscoveredPrinter;
 import com.zebra.sdk.printer.discovery.DiscoveryHandler;
+// For sendFile
+import com.zebra.sdk.comm.TcpConnection;
+import com.zebra.sdk.device.ZebraIllegalArgumentException;
+
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Set;
 
@@ -43,9 +53,6 @@ public class ZebraPrintPdf extends CordovaPlugin implements DiscoveryHandler {
     private int time;
     private int number;
 
-    public ZebraPrintPdf() {
-
-    }
 
     //    @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
@@ -57,8 +64,7 @@ public class ZebraPrintPdf extends CordovaPlugin implements DiscoveryHandler {
                 speed = args.getInt(2);
                 time = args.getInt(3);
                 number = args.getInt(4);
-                for (int i = 1; i < number; i++)
-                {
+                for (int i = 1; i < number; i++) {
                     labels.put(labels.get(0));
                 }
                 sendImage(labels, MACAddress);
@@ -78,10 +84,57 @@ public class ZebraPrintPdf extends CordovaPlugin implements DiscoveryHandler {
             String echoString = args.getString(0);
             sendEcho(echoString);
             return true;
+        } else if (action.equals("sendFile")) {
+            try {
+                String MACAddress = args.getString(0);
+                String pdfPath = args.getString(1);
+                sendFile(MACAddress, pdfPath);
+            } catch (Exception e) {
+                Log.e(LOG_TAG, e.getMessage());
+                e.printStackTrace();
+            }
+            return true;
         }
 
         return false;
     }
+
+    private void sendFile(String MACAddress, String pdfPath) throws Exception {
+//        try {
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (bluetoothAdapter.isEnabled()) {
+            Log.d(LOG_TAG, "Creating a bluetooth-connection for mac-address " + MACAddress);
+
+            thePrinterConn = new BluetoothConnection(MACAddress);
+
+//        Connection connection = new TcpConnection("192.168.1.100", TcpConnection.DEFAULT_ZPL_TCP_PORT);
+
+            Log.d(LOG_TAG, "Opening connection...");
+            thePrinterConn.open();
+            ZebraPrinter printer = ZebraPrinterFactory.getInstance(thePrinterConn);
+            printer.sendFileContents(pdfPath);
+            Log.d(LOG_TAG, "connection successfully opened...");
+
+        } else {
+            Log.d(LOG_TAG, "Bluetooth is disabled...");
+            callbackContext.error("Bluetooth is not turned on.");
+        }
+//        }
+//        catch (ConnectionException e) {
+//        e.printStackTrace();
+
+//        } catch (ZebraPrinterLanguageUnknownException e) {
+//            e.printStackTrace();
+//
+//        } catch (ZebraIllegalArgumentException e) {
+//            e.printStackTrace();
+//        }
+//        finally {
+        thePrinterConn.close();
+//        }
+
+    }
+
 
     private void sendImage(final JSONArray labels, final String MACAddress) throws IOException {
         new Thread(new Runnable() {
@@ -217,8 +270,7 @@ public class ZebraPrintPdf extends CordovaPlugin implements DiscoveryHandler {
             }
 
             Thread.sleep(labelSleep);
-            if (i > 0)
-            {
+            if (i > 0) {
                 Thread.sleep(1000 * time);
             }
         }
