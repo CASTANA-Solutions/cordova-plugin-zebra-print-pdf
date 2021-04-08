@@ -32,6 +32,7 @@ import com.zebra.sdk.device.ZebraIllegalArgumentException;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.json.JSONException;
 
 
@@ -39,6 +40,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Set;
+import java.util.ArrayList;
+
 
 public class ZebraPrintPdf extends CordovaPlugin implements DiscoveryHandler {
 
@@ -57,7 +60,62 @@ public class ZebraPrintPdf extends CordovaPlugin implements DiscoveryHandler {
     //    @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         this.callbackContext = callbackContext;
-        if (action.equals("printImage")) {
+        if (action.equals("echo")) {
+            try {
+                String echoString = args.getString(0);
+                sendEcho(echoString);
+            } catch (Exception e) {
+                Log.e(LOG_TAG, e.getMessage());
+                e.printStackTrace();
+                callbackContext.error(e.getMessage());
+            }
+            return true;
+        } else if (action.equals("getPrinterMacAddress")) {
+            try {
+                String printerName = args.getString(0);
+                getPrinterMacAddress(printerName);
+            } catch (Exception e) {
+                Log.e(LOG_TAG, e.getMessage());
+                e.printStackTrace();
+                callbackContext.error(e.getMessage());
+            }
+            return true;
+        } else if (action.equals("getPrinterName")) {
+            try {
+                String MACAddress = args.getString(0);
+                getPrinterName(MACAddress);
+            } catch (Exception e) {
+                Log.e(LOG_TAG, e.getMessage());
+                e.printStackTrace();
+                callbackContext.error(e.getMessage());
+            }
+            return true;
+        } else if (action.equals("getListConnectedBluetoothDevices")) {
+            try {
+                getListConnectedBluetoothDevices();
+            } catch (Exception e) {
+                Log.e(LOG_TAG, e.getMessage());
+                e.printStackTrace();
+                callbackContext.error(e.getMessage());
+            }
+            return true;
+        } else if (action.equals("sendFile")) {
+            try {
+                String MACAddress = args.getString(0);
+                String pdfPath = args.getString(1);
+                sendFile(MACAddress, pdfPath);
+            } catch (Exception e) {
+                Log.e(LOG_TAG, e.getMessage());
+                e.printStackTrace();
+                callbackContext.error(e.getMessage());
+            }
+            return true;
+        } /*else if (action.equals("discoverPrinters")) {
+            // Not implemented
+            discoverPrinters();
+            return true;
+        } else if (action.equals("printImage")) {
+            // Not implemented
             try {
                 JSONArray labels = args.getJSONArray(0);
                 String MACAddress = args.getString(1);
@@ -73,73 +131,182 @@ public class ZebraPrintPdf extends CordovaPlugin implements DiscoveryHandler {
                 e.printStackTrace();
             }
             return true;
-        } else if (action.equals("discoverPrinters")) {
-            discoverPrinters();
-            return true;
-        } else if (action.equals("getPrinterName")) {
-            String MACAddress = args.getString(0);
-            getPrinterName(MACAddress);
-            return true;
-        } else if (action.equals("echo")) {
-            String echoString = args.getString(0);
-            sendEcho(echoString);
-            return true;
-        } else if (action.equals("sendFile")) {
-            try {
-                String MACAddress = args.getString(0);
-                String pdfPath = args.getString(1);
-                sendFile(MACAddress, pdfPath);
-            } catch (Exception e) {
-                Log.e(LOG_TAG, e.getMessage());
-                e.printStackTrace();
-            }
-            return true;
-        } else if (action.equals("getPrinterMacAddress")) {
-            String printerName = args.getString(0);
-            getPrinterMacAddress(printerName);
-            return true;
-        }
+        }*/
         return false;
     }
 
+    private void sendEcho(final String echoString) throws Exception {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                callbackContext.success(echoString);
+            }
+        }).start();
+    }
+
+    private void getPrinterName(final String macAddress) throws Exception {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String printerName = searchPrinterNameForMacAddress(macAddress);
+                    if (printerName != null) {
+                        Log.d(LOG_TAG, "Successfully found connected printer with name " + printerName);
+                        callbackContext.success(printerName);
+                    } else {
+                        callbackContext.error("No printer found. If the problem persists, restart the printer.");
+                    }
+                } catch (Exception e) {
+                    callbackContext.error(e.getMessage());
+                }
+            }
+        }).start();
+    }
+
+    private void getPrinterMacAddress(final String printerName) throws Exception {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String macAddress = searchMacAddressForPrintername(printerName);
+                    if (printerName != null) {
+                        Log.d(LOG_TAG, "Successfully found connected printer with macAddress " + macAddress);
+                        callbackContext.success(macAddress);
+                    } else {
+                        callbackContext.error("No printer found. If the problem persists, restart the printer.");
+                    }
+                } catch (Exception e) {
+                    callbackContext.error(e.getMessage());
+                }
+            }
+        }).start();
+    }
+
+
+    private String searchPrinterNameForMacAddress(String macAddress) throws Exception {
+        Log.d(LOG_TAG, "Connecting with printer " + macAddress + " over bluetooth...");
+
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
+
+        if (pairedDevices.size() > 0) {
+            // There are paired devices. Get the name and address of each paired device.
+            for (BluetoothDevice device : pairedDevices) {
+                Log.d(LOG_TAG, "Paired device found: " + device.getName());
+                if (device.getAddress().equalsIgnoreCase(macAddress)) {
+                    return device.getName();
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private String searchMacAddressForPrintername(String printerName) throws Exception {
+        Log.d(LOG_TAG, "Search for printer " + printerName + " over bluetooth...");
+
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
+
+        if (pairedDevices.size() > 0) {
+            // There are paired devices. Get the name and address of each paired device.
+            for (BluetoothDevice device : pairedDevices) {
+                Log.d(LOG_TAG, "Paired device found: " + device.getName());
+                if (device.getName().equalsIgnoreCase(printerName)) {
+                    return device.getAddress();
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private void getListConnectedBluetoothDevices() throws Exception {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String devices = searchConnectedBluetoothDevices();
+                    if (devices != null) {
+                        Log.d(LOG_TAG, "Successfully found connected devices " + devices);
+                        callbackContext.success(devices);
+                    } else {
+                        callbackContext.error("No paired bluetooth devices found.");
+                    }
+                } catch (Exception e) {
+                    callbackContext.error(e.getMessage());
+                }
+            }
+        }).start();
+    }
+
+    private String searchConnectedBluetoothDevices() throws Exception {
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
+        JSONArray deviceArray = new JSONArray();
+
+        if (pairedDevices.size() > 0) {
+            // Get the name and MAC-address of each paired device.
+            for (BluetoothDevice device : pairedDevices) {
+                Log.d(LOG_TAG, "Paired device found: " + device.getName());
+                JSONObject d = new JSONObject();
+                d.put("name", device.getName());
+                d.put("macaddress", device.getAddress());
+                deviceArray.put(d);
+            }
+            return deviceArray.toString();
+        }
+
+        return null;
+    }
+
     private void sendFile(String MACAddress, String pdfPath) throws Exception {
-//        try {
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (bluetoothAdapter.isEnabled()) {
             Log.d(LOG_TAG, "Creating a bluetooth-connection for mac-address " + MACAddress);
 
             thePrinterConn = new BluetoothConnection(MACAddress);
-
-//        Connection connection = new TcpConnection("192.168.1.100", TcpConnection.DEFAULT_ZPL_TCP_PORT);
-
             Log.d(LOG_TAG, "Opening connection...");
             thePrinterConn.open();
             ZebraPrinter printer = ZebraPrinterFactory.getInstance(thePrinterConn);
             printer.sendFileContents(pdfPath);
-            Log.d(LOG_TAG, "connection successfully opened...");
+            Log.d(LOG_TAG, "File successfully sent...");
+            callbackContext.success("File successfully sent...");
 
         } else {
             Log.d(LOG_TAG, "Bluetooth is disabled...");
             callbackContext.error("Bluetooth is not turned on.");
         }
-//        }
-//        catch (ConnectionException e) {
-//        e.printStackTrace();
-
-//        } catch (ZebraPrinterLanguageUnknownException e) {
-//            e.printStackTrace();
-//
-//        } catch (ZebraIllegalArgumentException e) {
-//            e.printStackTrace();
-//        }
-//        finally {
         thePrinterConn.close();
-//        }
+    }
 
+    @Override
+    public void foundPrinter(DiscoveredPrinter discoveredPrinter) {
+        Log.d(LOG_TAG, "Printer found: " + discoveredPrinter.address);
+        if (!printerFound) {
+            printerFound = true;
+            callbackContext.success(discoveredPrinter.address);
+        }
     }
 
 
-    private void sendImage(final JSONArray labels, final String MACAddress) throws IOException {
+    @Override
+    public void discoveryFinished() {
+        Log.d(LOG_TAG, "Finished searching for printers...");
+        if (!printerFound) {
+            callbackContext.error("No printer found. If the problem persists, restart the printer.");
+        }
+    }
+
+    @Override
+    public void discoveryError(String s) {
+        Log.e(LOG_TAG, "An error occurred while searching for printers. Message: " + s);
+        callbackContext.error(s);
+    }
+
+    // Not implemented - Start
+
+    /*private void sendImage(final JSONArray labels, final String MACAddress) throws IOException {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -150,27 +317,17 @@ public class ZebraPrintPdf extends CordovaPlugin implements DiscoveryHandler {
 
     private void printLabels(JSONArray labels, String MACAddress) {
         try {
-
             boolean isConnected = openBluetoothConnection(MACAddress);
-
             if (isConnected) {
                 initializePrinter();
-
                 boolean isPrinterReady = getPrinterStatus(0);
-
                 if (isPrinterReady) {
 
                     printLabel(labels);
-
-                    //Voldoende wachten zodat label afgeprint is voordat we een nieuwe printer-operatie starten.
                     // Sufficient waiting for the label to print before we start a new printer operation.
-
                     //Thread.sleep(15000);
-
                     //SGD.SET("device.languages", "line_print", thePrinterConn);
-
                     thePrinterConn.close();
-
                     callbackContext.success();
                 } else {
                     Log.e(LOG_TAG, "Printer not ready");
@@ -332,12 +489,6 @@ public class ZebraPrintPdf extends CordovaPlugin implements DiscoveryHandler {
 
     }
 
-    /**
-     * Gebruik de Zebra Android SDK om de lengte te bepalen indien de printer LINK-OS ondersteunt
-     *
-     * @param zebraimage
-     * @throws Exception
-     */
     private void setLabelLength(ZebraImageAndroid zebraimage) throws Exception {
         ZebraPrinterLinkOs zebraPrinterLinkOs = ZebraPrinterFactory.createLinkOsPrinter(printer);
 
@@ -377,109 +528,9 @@ public class ZebraPrintPdf extends CordovaPlugin implements DiscoveryHandler {
                 }
             }
         }).start();
-    }
+    }*/
 
-    private void getPrinterName(final String macAddress) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                String printerName = searchPrinterNameForMacAddress(macAddress);
-
-                if (printerName != null) {
-                    Log.d(LOG_TAG, "Successfully found connected printer with name " + printerName);
-                    callbackContext.success(printerName);
-                } else {
-                    callbackContext.error("No printer found. If the problem persists, restart the printer.");
-                }
-            }
-        }).start();
-    }
-
-    private void getPrinterMacAddress(final String printerName) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                String macAddress = searchMacAddressForPrintername(printerName);
-
-                if (printerName != null) {
-                    Log.d(LOG_TAG, "Successfully found connected printer with macAddress " + macAddress);
-                    callbackContext.success(macAddress);
-                } else {
-                    callbackContext.error("No printer found. If the problem persists, restart the printer.");
-                }
-            }
-        }).start();
-    }
-
-    private void sendEcho(final String echoString) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                callbackContext.success(echoString);
-            }
-        }).start();
-    }
-
-    private String searchPrinterNameForMacAddress(String macAddress) {
-        Log.d(LOG_TAG, "Connecting with printer " + macAddress + " over bluetooth...");
-
-        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
-
-        if (pairedDevices.size() > 0) {
-            // There are paired devices. Get the name and address of each paired device.
-            for (BluetoothDevice device : pairedDevices) {
-                Log.d(LOG_TAG, "Paired device found: " + device.getName());
-                if (device.getAddress().equalsIgnoreCase(macAddress)) {
-                    return device.getName();
-                }
-            }
-        }
-
-        return null;
-    }
-
-    private String searchMacAddressForPrintername(String printerName) {
-        Log.d(LOG_TAG, "Search for printer " + printerName + " over bluetooth...");
-
-        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
-
-        if (pairedDevices.size() > 0) {
-            // There are paired devices. Get the name and address of each paired device.
-            for (BluetoothDevice device : pairedDevices) {
-                Log.d(LOG_TAG, "Paired device found: " + device.getName());
-                if (device.getName().equalsIgnoreCase(printerName)) {
-                    return device.getAddress();
-                }
-            }
-        }
-
-        return null;
-    }
-
-    @Override
-    public void foundPrinter(DiscoveredPrinter discoveredPrinter) {
-        Log.d(LOG_TAG, "Printer found: " + discoveredPrinter.address);
-        if (!printerFound) {
-            printerFound = true;
-            callbackContext.success(discoveredPrinter.address);
-        }
-    }
-
-
-    @Override
-    public void discoveryFinished() {
-        Log.d(LOG_TAG, "Finished searching for printers...");
-        if (!printerFound) {
-            callbackContext.error("No printer found. If the problem persists, restart the printer.");
-        }
-    }
-
-    @Override
-    public void discoveryError(String s) {
-        Log.e(LOG_TAG, "An error occurred while searching for printers. Message: " + s);
-        callbackContext.error(s);
-    }
+    // Not implemented - End
 
 }
+
