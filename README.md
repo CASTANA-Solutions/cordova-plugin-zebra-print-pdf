@@ -6,7 +6,7 @@ A cordova plugin for Zebra printer, connected via Bluetooth, to print PDF files.
   - (x) Plugin with 'echo function' included in build (without Zebra SDK)
   - (x) Zebra SDK included, simple API function can be called
   - (x) Bluetooth connected printer can be accessed via plugin
-  - ( ) PDF can be submitted and printed
+  - (x) PDF can be submitted and printed
 
 ## Goal, about this project
 This project is successful if:
