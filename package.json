@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-zebra-print-pdf",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "A cordova plugin for Zebra printer, connected via Bluetooth, to print PDF files.",
   "displayName": "zebraPrintPdf",
   "cordova": {

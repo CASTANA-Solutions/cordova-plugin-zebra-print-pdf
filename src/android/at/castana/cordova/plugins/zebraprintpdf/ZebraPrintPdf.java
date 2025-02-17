@@ -155,7 +155,7 @@ public class ZebraPrintPdf extends CordovaPlugin implements DiscoveryHandler {
                                           int[] grantResults) {
         for (int r : grantResults) {
             if (r == PackageManager.PERMISSION_DENIED) {
-                this.callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, PERMISSION_DENIED_ERROR));
+                this.callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR));
                 return;
             }
         }
