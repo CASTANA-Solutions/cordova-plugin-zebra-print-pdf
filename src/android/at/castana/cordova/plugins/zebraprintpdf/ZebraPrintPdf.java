@@ -10,6 +10,8 @@ import android.util.Log;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Looper;
+import android.Manifest;
+import android.content.pm.PackageManager;
 
 import com.zebra.sdk.comm.BluetoothConnection;
 import com.zebra.sdk.comm.Connection;
@@ -28,7 +30,8 @@ import com.zebra.sdk.printer.discovery.DiscoveryHandler;
 import com.zebra.sdk.comm.TcpConnection;
 import com.zebra.sdk.device.ZebraIllegalArgumentException;
 
-
+import org.apache.cordova.PluginResult;
+import org.apache.cordova.PermissionHelper;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.json.JSONArray;
@@ -55,73 +58,86 @@ public class ZebraPrintPdf extends CordovaPlugin implements DiscoveryHandler {
     private int speed;
     private int time;
     private int number;
+    private String action;
+    private JSONArray args;
 
 
     //    @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+        this.action = action;
+        this.args = args;
         this.callbackContext = callbackContext;
-        if (action.equals("echo")) {
+
+        if(!PermissionHelper.hasPermission(this, Manifest.permission.BLUETOOTH_CONNECT)) {
+            int SOME_RESULT_CODE = 0;
+            PermissionHelper.requestPermission(this, SOME_RESULT_CODE, Manifest.permission.BLUETOOTH_CONNECT);
+            return false;
+        }
+    }
+    private boolean _execute() {
+
+        if (this.action.equals("echo")) {
             try {
-                String echoString = args.getString(0);
+                String echoString = this.args.getString(0);
                 sendEcho(echoString);
             } catch (Exception e) {
                 Log.e(LOG_TAG, e.getMessage());
                 e.printStackTrace();
-                callbackContext.error(e.getMessage());
+                this.callbackContext.error(e.getMessage());
             }
             return true;
-        } else if (action.equals("getPrinterMacAddress")) {
+        } else if (this.action.equals("getPrinterMacAddress")) {
             try {
-                String printerName = args.getString(0);
+                String printerName = this.args.getString(0);
                 getPrinterMacAddress(printerName);
             } catch (Exception e) {
                 Log.e(LOG_TAG, e.getMessage());
                 e.printStackTrace();
-                callbackContext.error(e.getMessage());
+                this.callbackContext.error(e.getMessage());
             }
             return true;
-        } else if (action.equals("getPrinterName")) {
+        } else if (this.action.equals("getPrinterName")) {
             try {
-                String MACAddress = args.getString(0);
+                String MACAddress = this.args.getString(0);
                 getPrinterName(MACAddress);
             } catch (Exception e) {
                 Log.e(LOG_TAG, e.getMessage());
                 e.printStackTrace();
-                callbackContext.error(e.getMessage());
+                this.callbackContext.error(e.getMessage());
             }
             return true;
-        } else if (action.equals("getListConnectedBluetoothDevices")) {
+        } else if (this.action.equals("getListConnectedBluetoothDevices")) {
             try {
                 getListConnectedBluetoothDevices();
             } catch (Exception e) {
                 Log.e(LOG_TAG, e.getMessage());
                 e.printStackTrace();
-                callbackContext.error(e.getMessage());
+                this.callbackContext.error(e.getMessage());
             }
             return true;
-        } else if (action.equals("sendFile")) {
+        } else if (this.action.equals("sendFile")) {
             try {
-                String MACAddress = args.getString(0);
-                String pdfPath = args.getString(1);
+                String MACAddress = this.args.getString(0);
+                String pdfPath = this.args.getString(1);
                 sendFile(MACAddress, pdfPath);
             } catch (Exception e) {
                 Log.e(LOG_TAG, e.getMessage());
                 e.printStackTrace();
-                callbackContext.error(e.getMessage());
+                this.callbackContext.error(e.getMessage());
             }
             return true;
-        } /*else if (action.equals("discoverPrinters")) {
+        } /*else if (this.action.equals("discoverPrinters")) {
             // Not implemented
             discoverPrinters();
             return true;
-        } else if (action.equals("printImage")) {
+        } else if (this.action.equals("printImage")) {
             // Not implemented
             try {
-                JSONArray labels = args.getJSONArray(0);
-                String MACAddress = args.getString(1);
-                speed = args.getInt(2);
-                time = args.getInt(3);
-                number = args.getInt(4);
+                JSONArray labels = this.args.getJSONArray(0);
+                String MACAddress = this.args.getString(1);
+                speed = this.args.getInt(2);
+                time = this.args.getInt(3);
+                number = this.args.getInt(4);
                 for (int i = 1; i < number; i++) {
                     labels.put(labels.get(0));
                 }
@@ -133,6 +149,22 @@ public class ZebraPrintPdf extends CordovaPlugin implements DiscoveryHandler {
             return true;
         }*/
         return false;
+    }
+
+    public void onRequestPermissionResult(int requestCode, String[] permissions,
+                                          int[] grantResults) {
+        for (int r : grantResults) {
+            if (r == PackageManager.PERMISSION_DENIED) {
+                this.callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, PERMISSION_DENIED_ERROR));
+                return;
+            }
+        }
+        this._execute();
+        // switch (requestCode) {
+            // case SOME_INT_CODE:
+            //     someFunction(this.destType, this.encodingType);
+            //     break;
+        // }
     }
 
     private void sendEcho(final String echoString) throws Exception {
