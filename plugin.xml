@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<plugin id="cordova-plugin-zebra-print-pdf" version="1.2.1"
+<plugin id="cordova-plugin-zebra-print-pdf" version="1.2.2"
     xmlns="http://apache.org/cordova/ns/plugins/1.0">
     <name>Zebra Print Pdf</name>
     <description>Android Cordova Plugin for Pdf Print on ZEBRA Printers via Bluetooth</description>

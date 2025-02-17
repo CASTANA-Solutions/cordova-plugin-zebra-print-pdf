@@ -73,6 +73,7 @@ public class ZebraPrintPdf extends CordovaPlugin implements DiscoveryHandler {
             PermissionHelper.requestPermission(this, SOME_RESULT_CODE, Manifest.permission.BLUETOOTH_CONNECT);
             return false;
         }
+        return this._execute();
     }
     private boolean _execute() {
 
