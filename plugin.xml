@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<plugin id="cordova-plugin-zebra-print-pdf" version="1.2.2"
+<plugin id="cordova-plugin-zebra-print-pdf" version="1.2.3"
     xmlns="http://apache.org/cordova/ns/plugins/1.0">
     <name>Zebra Print Pdf</name>
     <description>Android Cordova Plugin for Pdf Print on ZEBRA Printers via Bluetooth</description>
@@ -12,6 +12,7 @@
         <config-file parent="/*" target="AndroidManifest.xml">
             <uses-permission android:name="android.permission.BLUETOOTH" />
             <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+            <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
             <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
             <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
             <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
