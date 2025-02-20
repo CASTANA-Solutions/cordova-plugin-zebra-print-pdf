@@ -10,6 +10,7 @@ import android.util.Log;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Looper;
+import android.os.Build;
 import android.Manifest;
 import android.content.pm.PackageManager;
 
@@ -61,25 +62,32 @@ public class ZebraPrintPdf extends CordovaPlugin implements DiscoveryHandler {
     private String action;
     private JSONArray args;
 
-
     //    @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         this.action = action;
         this.args = args;
         this.callbackContext = callbackContext;
 
-        if(!PermissionHelper.hasPermission(this, Manifest.permission.BLUETOOTH_CONNECT)) {
-            int SOME_RESULT_CODE = 0;
-            PermissionHelper.requestPermission(this, SOME_RESULT_CODE, Manifest.permission.BLUETOOTH_CONNECT);
-            return false;
+        if (isAndroid14OrHigher()) {
+            if(!PermissionHelper.hasPermission(this, Manifest.permission.BLUETOOTH_CONNECT)) {
+                int SOME_RESULT_CODE = 0;
+                PermissionHelper.requestPermission(this, SOME_RESULT_CODE, Manifest.permission.BLUETOOTH_CONNECT);
+                return false;
+            }
+            if(!PermissionHelper.hasPermission(this, Manifest.permission.BLUETOOTH_SCAN)) {
+                int SOME_RESULT_CODE = 0;
+                PermissionHelper.requestPermission(this, SOME_RESULT_CODE, Manifest.permission.BLUETOOTH_SCAN);
+                return false;
+            }
         }
-        if(!PermissionHelper.hasPermission(this, Manifest.permission.BLUETOOTH_SCAN)) {
-            int SOME_RESULT_CODE = 0;
-            PermissionHelper.requestPermission(this, SOME_RESULT_CODE, Manifest.permission.BLUETOOTH_SCAN);
-            return false;
-        }
+
         return this._execute();
     }
+
+    private boolean isAndroid14OrHigher() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE; // Android 14 (API 34)
+    }
+
     private boolean _execute() {
 
         if (this.action.equals("echo")) {
