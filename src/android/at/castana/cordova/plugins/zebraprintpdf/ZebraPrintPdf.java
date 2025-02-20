@@ -85,7 +85,9 @@ public class ZebraPrintPdf extends CordovaPlugin implements DiscoveryHandler {
     }
 
     private boolean isAndroid14OrHigher() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE; // Android 14 (API 34)
+        // return Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE; // Android 14 (API 34)
+        // Use numeric value instead of UPSIDE_DOWN_CAKE to avoid compilation errors
+        return Build.VERSION.SDK_INT >= 34; // Android 14 (API 34)
     }
 
     private boolean _execute() {
