@@ -77,22 +77,22 @@ public class ZebraPrintPlugin extends CordovaPlugin {
                 printJobManager.printPdf(args.optJSONObject(0), connectionManager, callbackContext, cordova.getActivity().getApplicationContext());
                 break;
             case "printZpl":
-                printJobManager.printZpl(args.optJSONObject(0), connectionManager, callbackContext);
+                printJobManager.printZpl(args.optJSONObject(0), connectionManager, callbackContext, cordova.getActivity().getApplicationContext());
                 break;
             case "printCpcl":
-                printJobManager.printCpcl(args.optJSONObject(0), connectionManager, callbackContext);
+                printJobManager.printCpcl(args.optJSONObject(0), connectionManager, callbackContext, cordova.getActivity().getApplicationContext());
                 break;
             case "printRaw":
-                printJobManager.printRaw(args.optJSONObject(0), connectionManager, callbackContext);
+                printJobManager.printRaw(args.optJSONObject(0), connectionManager, callbackContext, cordova.getActivity().getApplicationContext());
                 break;
             case "getStatus":
-                printJobManager.getStatus(args.optJSONObject(0), connectionManager, callbackContext);
+                printJobManager.getStatus(args.optJSONObject(0), connectionManager, callbackContext, cordova.getActivity().getApplicationContext());
                 break;
             case "getSetting":
-                printJobManager.getSetting(args.getString(0), connectionManager, callbackContext);
+                printJobManager.getSetting(args.getString(0), connectionManager, callbackContext, cordova.getActivity().getApplicationContext());
                 break;
             case "setSetting":
-                printJobManager.setSetting(args.getString(0), args.getString(1), connectionManager, callbackContext);
+                printJobManager.setSetting(args.getString(0), args.getString(1), connectionManager, callbackContext, cordova.getActivity().getApplicationContext());
                 break;
             default:
                 callbackContext.error("Action not recognized: " + action);
