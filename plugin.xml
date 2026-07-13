@@ -1,31 +1,105 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<plugin id="cordova-plugin-zebra-print-pdf" version="1.2.6"
+<plugin id="cordova-plugin-zebra-print-pdf" version="1.3.0"
     xmlns="http://apache.org/cordova/ns/plugins/1.0">
-    <name>Zebra Print Pdf</name>
-    <description>Android Cordova Plugin for Pdf Print on ZEBRA Printers via Bluetooth</description>
+
+    <name>ZebraPrint</name>
+    <description>Unified Cordova plugin for Zebra printers - PDF and ZPL printing on Android and iOS</description>
     <license>Apache 2.0</license>
-    <keywords>cordova, zebra, print, pdf, bluetooth</keywords>
-    <js-module name="ZebraPrintPdf" src="www/zebraPrintPdf.js">
+    <keywords>cordova,zebra,printer,pdf,zpl,bluetooth,label</keywords>
+
+    <engines>
+        <engine name="cordova" version=">=10.0.0" />
+        <engine name="cordova-android" version=">=12.0.0" />
+        <engine name="cordova-ios" version=">=7.0.0" />
+    </engines>
+
+    <!-- JavaScript Module -->
+    <js-module src="www/ZebraPrint.js" name="ZebraPrint">
+        <clobbers target="cordova.plugins.ZebraPrintManager" />
+        <clobbers target="window.ZebraPrint" />
         <clobbers target="cordova.plugins.zebraPrintPdf" />
     </js-module>
+
+    <!-- ==================== ANDROID ==================== -->
     <platform name="android">
-        <config-file parent="/*" target="AndroidManifest.xml">
-            <uses-permission android:name="android.permission.BLUETOOTH" />
-            <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-            <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
-            <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-            <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-            <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-        </config-file>
-        <config-file parent="/*" target="config.xml">
-            <feature name="ZebraPrintPdf">
-                <param name="android-package"
-                    value="at.castana.cordova.plugins.zebraprintpdf.ZebraPrintPdf" />
+        <config-file target="res/xml/config.xml" parent="/*">
+            <feature name="ZebraPrint">
+                <param name="android-package" value="at.castana.cordova.plugins.zebraprint.ZebraPrintPlugin" />
+                <param name="onload" value="false" />
             </feature>
         </config-file>
-        <source-file src="src/android/lib/ZSDK_ANDROID_API.jar" target-dir="libs" />
 
-        <source-file src="src/android/at/castana/cordova/plugins/zebraprintpdf/ZebraPrintPdf.java"
-            target-dir="src/android" />
+        <!-- Permissions -->
+        <config-file target="AndroidManifest.xml" parent="/manifest">
+            <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+            <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+            <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+            <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+            <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+            <uses-permission android:name="android.permission.INTERNET" />
+        </config-file>
+
+        <!-- Source Files -->
+        <source-file src="src/android/ZebraPrintPlugin.java" target-dir="src/com/zebraprint/plugin" />
+        <source-file src="src/android/PrinterDiscoveryManager.java" target-dir="src/com/zebraprint/plugin" />
+        <source-file src="src/android/PrinterConnectionManager.java" target-dir="src/com/zebraprint/plugin" />
+        <source-file src="src/android/PrintJobManager.java" target-dir="src/com/zebraprint/plugin" />
+
+        <!-- Gradle (SDK dependency) -->
+        <framework src="src/android/build.gradle" custom="true" type="gradleReference" />
+
+        <!-- Zebra SDK JAR -->
+        <lib-file src="src/android/libs/ZSDK_ANDROID_API.jar" />
+    </platform>
+
+    <!-- ==================== iOS ==================== -->
+    <platform name="ios">
+        <config-file target="config.xml" parent="/*">
+            <feature name="ZebraPrint">
+                <param name="ios-package" value="ZebraPrintPlugin" />
+                <param name="onload" value="false" />
+            </feature>
+        </config-file>
+
+        <!-- MFi Bluetooth Accessory Protocol -->
+        <config-file target="*-Info.plist" parent="UISupportedExternalAccessoryProtocols">
+            <array>
+                <string>com.zebra.rawport</string>
+            </array>
+        </config-file>
+
+        <!-- Background Mode: External Accessory -->
+        <config-file target="*-Info.plist" parent="UIBackgroundModes">
+            <array>
+                <string>external-accessory</string>
+            </array>
+        </config-file>
+
+        <!-- Bluetooth Usage Description -->
+        <config-file target="*-Info.plist" parent="NSBluetoothAlwaysUsageDescription">
+            <string>Bluetooth is required to connect to Zebra printers</string>
+        </config-file>
+
+        <!-- Local Network Usage (iOS 14+) -->
+        <config-file target="*-Info.plist" parent="NSLocalNetworkUsageDescription">
+            <string>Local network access is required to discover Zebra printers via WiFi</string>
+        </config-file>
+
+        <!-- Swift Source Files -->
+        <source-file src="src/ios/ZebraPrintPlugin.swift" />
+        <source-file src="src/ios/PrinterDiscoveryManager.swift" />
+        <source-file src="src/ios/PrinterConnectionManager.swift" />
+        <source-file src="src/ios/PrintJobManager.swift" />
+        <source-file src="src/ios/CompatibilityStubs.swift" />
+
+        <!-- Bridging Header -->
+        <header-file src="src/ios/ZebraPrint-Bridging-Header.h" type="BridgingHeader" />
+
+        <!-- Zebra SDK XCFramework -->
+        <framework src="src/ios/libs/ZSDK_API.xcframework" custom="true" />
+
+        <!-- Required System Frameworks -->
+        <framework src="ExternalAccessory.framework" />
+        <framework src="CoreBluetooth.framework" />
     </platform>
 </plugin>
