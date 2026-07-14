@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-zebra-print-pdf",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "Cordova plugin for Zebra printers (PDF, ZPL, CPCL) on iOS and Android",
   "displayName": "ZebraPrint",
   "cordova": {
