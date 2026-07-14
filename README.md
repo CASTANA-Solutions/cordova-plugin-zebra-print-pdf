@@ -26,17 +26,9 @@ Current version is a complete rework. Last legacy version: 1.2.6
   - ZPL
   - CPCL
   - Raw (Base64)
-- **Intelligent Native Core (NEW)**:
-  - **Native Pre-Print Status Check**: Automatically checks printer readiness natively. Safely aborts and returns specific errors (`ERROR_PAPER_OUT`, `ERROR_HEAD_OPEN`, etc.) before crashing.
-  - **Native Print Queuing**: Send multiple print commands concurrently from JS; the native queue handles them safely and sequentially.
-  - **Auto-Reconnect**: The plugin automatically persists the last successful connection address. Call `connect()` with no arguments to easily reconnect.
 - **Status Monitoring**: Paper out, paused, head open, etc.
 - **Configuration**: Send and receive SGD (Set-Get-Do) commands.
 - **Discovery**: Search for printers on the network or via Bluetooth.
-
-### Future Roadmap Ideas
-- Native suspend/resume support to auto-disconnect Bluetooth when the app minimizes.
-- Native ZPL templating (pass variables to a pre-stored template).
 
 ### Installation
 
@@ -131,6 +123,29 @@ console.log("Printer name:", value);
 await window.ZebraPrint.setSetting("device.friendly_name", "MyPrinter");
 ```
 
+### Legacy API (Backwards Compatibility)
+
+If you are migrating from the old `cordova-plugin-zebra-print-pdf`, this plugin serves as a **drop-in replacement**. You don't need to change any Javascript code in your app!
+
+It exposes the old API under `cordova.plugins.zebraPrintPdf` for full backwards compatibility:
+
+```javascript
+// Get list of connected devices (Returns a JSON String of an array with objects: [{ name: "...", macaddress: "..." }])
+cordova.plugins.zebraPrintPdf.getListConnectedBluetoothDevices(function(devices) {
+    var deviceList = JSON.parse(devices);
+    console.log(deviceList);
+});
+
+// Get printer name from MAC Address
+cordova.plugins.zebraPrintPdf.getPrinterName("AA:BB:CC:DD:EE:FF", function(name) { ... });
+
+// Get MAC Address from printer name
+cordova.plugins.zebraPrintPdf.getPrinterMacAddress("Zebra Printer", function(mac) { ... });
+
+// Print a PDF file directly via Bluetooth (connects, prints, and disconnects automatically)
+cordova.plugins.zebraPrintPdf.sendFile("AA:BB:CC:DD:EE:FF", "file:///path/to/file.pdf", successCallback, errorCallback);
+```
+
 ---
 
 <a name="deutsch"></a>
@@ -147,17 +162,9 @@ await window.ZebraPrint.setSetting("device.friendly_name", "MyPrinter");
   - ZPL
   - CPCL
   - Raw (Base64)
-- **Intelligenter nativer Kern (NEU)**:
-  - **Nativer Status-Check vor dem Druck**: Prüft automatisch ob der Drucker bereit ist. Bei Fehlern (`ERROR_PAPER_OUT`, `ERROR_HEAD_OPEN`, etc.) bricht das Plugin sicher ab, anstatt abzustürzen.
-  - **Native Druck-Warteschlange (Queueing)**: Du kannst aus JS mehrere Etiketten gleichzeitig senden. Der native Code reiht sie sicher und sauber ein.
-  - **Auto-Reconnect**: Das Plugin merkt sich den zuletzt verbundenen Drucker. Einfach `connect()` ohne Argumente aufrufen, um wiederzuverbinden.
 - **Statusabfrage**: Papierstatus, Pausenstatus, offener Druckkopf etc.
 - **Konfiguration**: SGD (Set-Get-Do) Befehle senden und empfangen.
 - **Discovery**: Drucker im Netzwerk oder über Bluetooth suchen.
-
-### Zukünftige Ideen / Roadmap
-- Automatischer Suspend/Resume-Support: App trennt Drucker im Hintergrund nativ, um Akku zu sparen.
-- Native ZPL Templates: Sende nur noch Variablen an ein lokal auf dem Drucker gespeichertes Etikett.
 
 ### Installation
 
@@ -245,4 +252,27 @@ console.log("Druckername:", value);
 
 // SGD Setzen
 await window.ZebraPrint.setSetting("device.friendly_name", "MeinDrucker");
+```
+
+### Legacy API (Rückwärtskompatibilität)
+
+Wenn du von dem alten `cordova-plugin-zebra-print-pdf` migrierst, dient dieses Plugin als direkter **Drop-in Replacement**. Du musst deinen existierenden Javascript-Code in der App nicht anpassen!
+
+Es stellt die alte API weiterhin unter `cordova.plugins.zebraPrintPdf` zur Verfügung:
+
+```javascript
+// Liste verbundener Geräte abrufen (Gibt einen JSON-String zurück: [{ name: "...", macaddress: "..." }])
+cordova.plugins.zebraPrintPdf.getListConnectedBluetoothDevices(function(devices) {
+    var deviceList = JSON.parse(devices);
+    console.log(deviceList);
+});
+
+// Druckernamen anhand der MAC-Adresse abfragen
+cordova.plugins.zebraPrintPdf.getPrinterName("AA:BB:CC:DD:EE:FF", function(name) { ... });
+
+// MAC-Adresse anhand des Druckernamens abfragen
+cordova.plugins.zebraPrintPdf.getPrinterMacAddress("Zebra Drucker", function(mac) { ... });
+
+// Ein PDF direkt per Bluetooth drucken (verbindet, druckt und trennt automatisch)
+cordova.plugins.zebraPrintPdf.sendFile("AA:BB:CC:DD:EE:FF", "file:///pfad/zur/datei.pdf", successCallback, errorCallback);
 ```

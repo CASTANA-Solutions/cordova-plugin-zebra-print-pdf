@@ -42,10 +42,7 @@ var ZebraPrint = {
 
     /**
      * Connects to a Zebra printer.
-     * @param {Object} [options] Connection options.
-     * @param {string} [options.address] MAC Address, IP, or Serial. If omitted, attempts to reconnect to the last known printer.
-     * @param {string} [options.type] "bluetooth" | "tcp". Defaults to bluetooth.
-     * @param {number} [options.port] TCP port if type is tcp. Defaults to 9100.
+     * @param {Object} options Printer connection options (e.g. { address: 'MAC', type: 'bluetooth' }).
      * @param {Function} [success] Optional success callback.
      * @param {Function} [error] Optional error callback.
      * @returns {Promise<string>} Resolves when connection is successful.
@@ -139,6 +136,8 @@ var ZebraPrint = {
         return execPromise('getStatus', [options || {}], success, error);
     },
 
+
+
     // ==========================================
     // LEGACY API (Backwards Compatibility Layer)
     // For `cordova-plugin-zebra-print-pdf`
@@ -188,9 +187,10 @@ var ZebraPrint = {
     getListConnectedBluetoothDevices: function(successCallback, errorCallback) {
         this.discover('bluetooth', function(printers) {
             if (successCallback) {
-                // The old plugin probably returned a list of MACs or objects.
-                // We return our full object which is backwards compatible if used safely.
-                successCallback(printers);
+                var legacyPrinters = printers.map(function(p) {
+                    return { name: p.name, macaddress: p.address };
+                });
+                successCallback(JSON.stringify(legacyPrinters));
             }
         }, errorCallback);
     },
@@ -201,7 +201,14 @@ var ZebraPrint = {
     sendFile: function(MACAddress, pdfPath, successCallback, errorCallback) {
         var self = this;
         this.connect({ address: MACAddress, type: 'bluetooth' }, function() {
-            self.printPdf(pdfPath, successCallback, errorCallback);
+            self.printPdf(pdfPath, function(res) {
+                self.disconnect(function() {
+                    if (successCallback) successCallback(res);
+                }, errorCallback);
+            }, function(err) {
+                self.disconnect();
+                if (errorCallback) errorCallback(err);
+            });
         }, errorCallback);
     }
 };

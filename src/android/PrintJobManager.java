@@ -76,7 +76,7 @@ public class PrintJobManager {
                         return;
                     }
 
-                    checkPrinterStatus(printer);
+                    // checkPrinterStatus(printer); // Disabled for PDF Direct because ~HS command can interfere with PDF processing and cause blank labels
 
                     printer.sendFileContents(filePath);
                     callbackContext.success("PDF printed successfully");

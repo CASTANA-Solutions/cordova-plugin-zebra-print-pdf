@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<plugin id="cordova-plugin-zebra-print-pdf" version="1.3.2"
+<plugin id="cordova-plugin-zebra-print-pdf" version="1.3.3"
     xmlns="http://apache.org/cordova/ns/plugins/1.0">
 
     <name>ZebraPrint</name>
@@ -90,13 +90,12 @@
         <source-file src="src/ios/PrinterDiscoveryManager.swift" />
         <source-file src="src/ios/PrinterConnectionManager.swift" />
         <source-file src="src/ios/PrintJobManager.swift" />
-        <source-file src="src/ios/CompatibilityStubs.swift" />
 
         <!-- Bridging Header -->
-        <header-file src="src/ios/ZebraPrint-Bridging-Header.h" type="BridgingHeader" />
+        <header-file src="src/ios/ZebraPrint-Bridging-Header.h" />
 
         <!-- Zebra SDK XCFramework -->
-        <framework src="src/ios/libs/ZSDK_API.xcframework" custom="true" />
+        <framework src="src/ios/libs/ZSDK_API.xcframework" custom="true" embed="true" />
 
         <!-- Required System Frameworks -->
         <framework src="ExternalAccessory.framework" />

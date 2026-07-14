@@ -94,6 +94,7 @@ public class ZebraPrintPlugin extends CordovaPlugin {
             case "setSetting":
                 printJobManager.setSetting(args.getString(0), args.getString(1), connectionManager, callbackContext, cordova.getActivity().getApplicationContext());
                 break;
+
             default:
                 callbackContext.error("Action not recognized: " + action);
                 break;

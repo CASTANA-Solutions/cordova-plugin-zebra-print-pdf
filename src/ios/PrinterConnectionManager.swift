@@ -3,13 +3,13 @@ import ExternalAccessory
 
 class PrinterConnectionManager {
     
-    private var currentConnection: (NSObject & ZebraPrinterConnection)?
+    private var currentConnection: ZebraPrinterConnection?
     
-    func getConnection() -> (NSObject & ZebraPrinterConnection)? {
+    func getConnection() -> ZebraPrinterConnection? {
         return currentConnection
     }
     
-    func getOrOpenConnection(options: [String: Any]?, error: inout Error?) -> (NSObject & ZebraPrinterConnection)? {
+    func getOrOpenConnection(options: [String: Any]?, error: inout Error?) -> ZebraPrinterConnection? {
         if let opts = options, let address = opts["address"] as? String {
             // Implicit connect
             do {
@@ -22,40 +22,27 @@ class PrinterConnectionManager {
             }
         } else if let conn = currentConnection, conn.isConnected() {
             return conn
-        } else if let lastAddress = UserDefaults.standard.string(forKey: "ZebraPrintLastAddress") {
-            // Auto-reconnect
-            let lastType = UserDefaults.standard.string(forKey: "ZebraPrintLastType") ?? "bluetooth"
-            do {
-                let tempConn = try createConnection(address: lastAddress, type: lastType, port: 9100)
-                tempConn.open()
-                return tempConn
-            } catch let err {
-                error = err
-                return nil
-            }
         } else {
             error = NSError(domain: "ZebraPrint", code: 1, userInfo: [NSLocalizedDescriptionKey: "No active connection and no address provided."])
             return nil
         }
     }
     
-    func closeImplicitConnection(_ connection: (NSObject & ZebraPrinterConnection)?) {
+    func closeImplicitConnection(_ connection: ZebraPrinterConnection?) {
         if let conn = connection, conn !== currentConnection {
             conn.close()
         }
     }
     
     func connect(options: [String: Any], callbackId: String, commandDelegate: CDVCommandDelegate) {
-        let type = (options["type"] as? String ?? "bluetooth").lowercased()
-        let port = options["port"] as? Int ?? 9100
-        let address: String
-        if let addr = options["address"] as? String {
-            address = addr
-        } else {
+        guard let address = options["address"] as? String else {
             let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: "Address is required to connect")
             commandDelegate.send(pluginResult, callbackId: callbackId)
             return
         }
+        
+        let type = options["type"] as? String ?? "bluetooth"
+        let port = options["port"] as? Int ?? 9100
         
         if let conn = currentConnection, conn.isConnected() {
             conn.close()
@@ -66,9 +53,6 @@ class PrinterConnectionManager {
             let success = currentConnection?.open() ?? false
             
             if success {
-                UserDefaults.standard.set(address, forKey: "ZebraPrintLastAddress")
-                UserDefaults.standard.set(type, forKey: "ZebraPrintLastType")
-                
                 let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "Connected to \(address)")
                 commandDelegate.send(pluginResult, callbackId: callbackId)
             } else {
@@ -83,33 +67,21 @@ class PrinterConnectionManager {
         }
     }
     
-    private func createConnection(address: String, type: String, port: Int) throws -> NSObject & ZebraPrinterConnection {
+    private func createConnection(address: String, type: String, port: Int) throws -> ZebraPrinterConnection {
         switch type.lowercased() {
         case "tcp", "network":
-            #if targetEnvironment(simulator)
-            return TcpPrinterConnection(address: address, andWithPort: port)
-            #else
-            return TcpPrinterConnection(address: address, andWithPort: port)
-            #endif
+            return TcpPrinterConnection(address: address, andWithPort: Int(port))
         case "bluetooth":
-            #if targetEnvironment(simulator)
-            throw NSError(domain: "ZebraPrint", code: 4, userInfo: [NSLocalizedDescriptionKey: "Bluetooth/MFi is not supported in Simulator. Please test on a physical device."])
-            #else
+            // address should be the serialNumber for MFi Bluetooth
             if let conn = MfiBtPrinterConnection(serialNumber: address) {
                 return conn
             }
             throw NSError(domain: "ZebraPrint", code: 2, userInfo: [NSLocalizedDescriptionKey: "Failed to initialize MfiBtPrinterConnection for serial: \(address)"])
-            #endif
         default:
-            #if targetEnvironment(simulator)
-            // Default to TCP in simulator for convenience
-            return TcpPrinterConnection(address: address, andWithPort: port)
-            #else
             if let conn = MfiBtPrinterConnection(serialNumber: address) {
                 return conn
             }
             throw NSError(domain: "ZebraPrint", code: 2, userInfo: [NSLocalizedDescriptionKey: "Unsupported connection type: \(type)"])
-            #endif
         }
     }
     

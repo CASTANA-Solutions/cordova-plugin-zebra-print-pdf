@@ -33,12 +33,17 @@ class PrinterDiscoveryManager {
             dispatchGroup.enter()
             
             DispatchQueue.global().async {
-                if let discoveredPrinters = try? NetworkDiscoverer.localBroadcast() as? [DiscoveredPrinterNetwork] {
+                var error: NSError?
+                if let discoveredPrinters = NetworkDiscoverer.localBroadcast(&error) as? [DiscoveredPrinter] {
                     for dp in discoveredPrinters {
                         var printer: [String: Any] = [:]
                         printer["address"] = dp.address
-                        printer["name"] = dp.dnsName
+
+                        let dataMap = dp.discoveryDataMap as? [String: String] ?? [:]
+                        printer["name"] = dataMap["FRIENDLY_NAME"] ?? dataMap["PRODUCT_NAME"] ?? dp.address
                         printer["type"] = "network"
+                        printer["serialNumber"] = dataMap["SYSTEM_NAME"]
+                        printer["model"] = dataMap["HARDWARE_COMPATIBILITY"]
                         printer["isConnected"] = false
 
                         objc_sync_enter(self)

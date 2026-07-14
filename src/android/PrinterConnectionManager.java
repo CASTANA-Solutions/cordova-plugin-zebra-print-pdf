@@ -38,21 +38,9 @@ public class PrinterConnectionManager {
             return tempConn;
         } else if (currentConnection != null && currentConnection.isConnected()) {
             return currentConnection;
-        } else if (context != null) {
-            // Auto-reconnect to last known printer
-            android.content.SharedPreferences prefs = context.getSharedPreferences("ZebraPrintPrefs", Context.MODE_PRIVATE);
-            String lastAddress = prefs.getString("lastAddress", null);
-            String lastType = prefs.getString("lastType", "bluetooth");
-            if (lastAddress != null) {
-                JSONObject lastOpts = new JSONObject();
-                lastOpts.put("address", lastAddress);
-                lastOpts.put("type", lastType);
-                Connection tempConn = createConnection(lastOpts, context);
-                tempConn.open();
-                return tempConn;
-            }
+        } else {
+            throw new ConnectionException("No active connection and no address provided.");
         }
-        throw new ConnectionException("No active connection and no address provided.");
     }
     
     public synchronized void closeImplicitConnection(Connection connection) {
@@ -79,15 +67,6 @@ public class PrinterConnectionManager {
 
             currentConnection = createConnection(options, context);
             currentConnection.open();
-
-            // Save for future auto-reconnect
-            if (context != null) {
-                android.content.SharedPreferences prefs = context.getSharedPreferences("ZebraPrintPrefs", Context.MODE_PRIVATE);
-                prefs.edit()
-                     .putString("lastAddress", options.getString("address"))
-                     .putString("lastType", options.optString("type", "bluetooth"))
-                     .apply();
-            }
 
             callbackContext.success("Connected to " + options.getString("address"));
         } catch (Exception e) {
