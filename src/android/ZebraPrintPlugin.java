@@ -67,7 +67,13 @@ public class ZebraPrintPlugin extends CordovaPlugin {
         switch (action) {
             case "discover":
                 // discoveryManager.discover(args.optJSONObject(0), callbackContext);
-                getListConnectedBluetoothDevices(callbackContext);
+                try {
+                    getListConnectedBluetoothDevices(callbackContext);
+                } catch (Exception e) {
+                    // Log.e(LOG_TAG, e.getMessage());
+                    // e.printStackTrace();
+                    callbackContext.error(e.getMessage());
+                }
                 break;
             case "connect":
                 connectionManager.connect(args.optJSONObject(0), callbackContext, cordova.getActivity());
