@@ -65,7 +65,8 @@ public class ZebraPrintPlugin extends CordovaPlugin {
     private void handleAction(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         switch (action) {
             case "discover":
-                discoveryManager.discover(args.optJSONObject(0), callbackContext);
+                // discoveryManager.discover(args.optJSONObject(0), callbackContext);
+                getListConnectedBluetoothDevices(callbackContext);
                 break;
             case "connect":
                 connectionManager.connect(args.optJSONObject(0), callbackContext, cordova.getActivity());
@@ -171,14 +172,14 @@ public class ZebraPrintPlugin extends CordovaPlugin {
 
 
     
-    private void getListConnectedBluetoothDevices() throws Exception {
+    private void getListConnectedBluetoothDevices(CallbackContext callbackContext) throws Exception {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     String devices = searchConnectedBluetoothDevices();
                     if (devices != null) {
-                        Log.d(LOG_TAG, "Successfully found connected devices " + devices);
+                        // Log.d(LOG_TAG, "Successfully found connected devices " + devices);
                         callbackContext.success(devices);
                     } else {
                         callbackContext.error("No paired bluetooth devices found.");
@@ -198,7 +199,7 @@ public class ZebraPrintPlugin extends CordovaPlugin {
         if (pairedDevices.size() > 0) {
             // Get the name and MAC-address of each paired device.
             for (BluetoothDevice device : pairedDevices) {
-                Log.d(LOG_TAG, "Paired device found: " + device.getName());
+                // Log.d(LOG_TAG, "Paired device found: " + device.getName());
                 JSONObject d = new JSONObject();
                 d.put("name", device.getName());
                 d.put("macaddress", device.getAddress());
