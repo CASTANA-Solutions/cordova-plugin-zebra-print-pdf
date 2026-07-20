@@ -1,5 +1,8 @@
 package at.castana.cordova.plugins.zebraprint;
 
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.PluginResult;
@@ -164,5 +167,46 @@ public class ZebraPrintPlugin extends CordovaPlugin {
     public void onDestroy() {
         connectionManager.disconnect(null);
         super.onDestroy();
+    }
+
+
+    
+    private void getListConnectedBluetoothDevices() throws Exception {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String devices = searchConnectedBluetoothDevices();
+                    if (devices != null) {
+                        Log.d(LOG_TAG, "Successfully found connected devices " + devices);
+                        callbackContext.success(devices);
+                    } else {
+                        callbackContext.error("No paired bluetooth devices found.");
+                    }
+                } catch (Exception e) {
+                    callbackContext.error(e.getMessage());
+                }
+            }
+        }).start();
+    }
+
+    private String searchConnectedBluetoothDevices() throws Exception {
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
+        JSONArray deviceArray = new JSONArray();
+
+        if (pairedDevices.size() > 0) {
+            // Get the name and MAC-address of each paired device.
+            for (BluetoothDevice device : pairedDevices) {
+                Log.d(LOG_TAG, "Paired device found: " + device.getName());
+                JSONObject d = new JSONObject();
+                d.put("name", device.getName());
+                d.put("macaddress", device.getAddress());
+                deviceArray.put(d);
+            }
+            return deviceArray.toString();
+        }
+
+        return null;
     }
 }
