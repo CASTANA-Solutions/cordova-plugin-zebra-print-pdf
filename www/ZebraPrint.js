@@ -190,6 +190,11 @@ var ZebraPrint = {
                 var legacyPrinters = printers.map(function(p) {
                     return { name: p.name, macaddress: p.address };
                 });
+                if (typeof printers === "string") {
+                    legacyPrinters = printers.map(function(p) {
+                        return { name: p.name, macaddress: p.macaddress };
+                    });
+                }
                 successCallback(JSON.stringify(legacyPrinters));
             }
         }, errorCallback);
