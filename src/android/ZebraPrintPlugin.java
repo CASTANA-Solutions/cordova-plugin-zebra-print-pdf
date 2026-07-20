@@ -2,6 +2,7 @@ package at.castana.cordova.plugins.zebraprint;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import java.util.Set;
 
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CallbackContext;
