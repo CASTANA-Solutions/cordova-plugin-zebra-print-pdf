@@ -1,12 +1,15 @@
 #import <Cordova/CDV.h>
 
 // Zebra Link-OS SDK Headers
-#import <ZSDK_API/MfiBtPrinterConnection.h>
-#import <ZSDK_API/TcpPrinterConnection.h>
-#import <ZSDK_API/ZebraPrinterConnection.h>
-#import <ZSDK_API/ZebraPrinterFactory.h>
-#import <ZSDK_API/ZebraPrinter.h>
-#import <ZSDK_API/PrinterStatus.h>
-#import <ZSDK_API/SGD.h>
-#import <ZSDK_API/NetworkDiscoverer.h>
-#import <ZSDK_API/DiscoveredPrinter.h>
+// Note: ZSDK_API.xcframework ships a static library with a flat Headers
+// folder (no "ZSDK_API/" subdirectory), so these must be quoted includes
+// rather than framework-style angle-bracket imports.
+#import "MfiBtPrinterConnection.h"
+#import "TcpPrinterConnection.h"
+#import "ZebraPrinterConnection.h"
+#import "ZebraPrinterFactory.h"
+#import "ZebraPrinter.h"
+#import "PrinterStatus.h"
+#import "SGD.h"
+#import "NetworkDiscoverer.h"
+#import "DiscoveredPrinter.h"
