@@ -3,13 +3,13 @@ import ExternalAccessory
 
 class PrinterConnectionManager {
     
-    private var currentConnection: ZebraPrinterConnection?
-    
-    func getConnection() -> ZebraPrinterConnection? {
+    private var currentConnection: (ZebraPrinterConnection & NSObjectProtocol)?
+
+    func getConnection() -> (ZebraPrinterConnection & NSObjectProtocol)? {
         return currentConnection
     }
-    
-    func getOrOpenConnection(options: [String: Any]?, error: inout Error?) -> ZebraPrinterConnection? {
+
+    func getOrOpenConnection(options: [String: Any]?, error: inout Error?) -> (ZebraPrinterConnection & NSObjectProtocol)? {
         if let opts = options, let address = opts["address"] as? String {
             // Implicit connect
             do {
@@ -28,7 +28,7 @@ class PrinterConnectionManager {
         }
     }
     
-    func closeImplicitConnection(_ connection: ZebraPrinterConnection?) {
+    func closeImplicitConnection(_ connection: (ZebraPrinterConnection & NSObjectProtocol)?) {
         if let conn = connection, conn !== currentConnection {
             conn.close()
         }
@@ -36,7 +36,7 @@ class PrinterConnectionManager {
     
     func connect(options: [String: Any], callbackId: String, commandDelegate: CDVCommandDelegate) {
         guard let address = options["address"] as? String else {
-            let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: "Address is required to connect")
+            let pluginResult = CDVPluginResult(status: CDVCommandStatus.error, messageAs: "Address is required to connect")
             commandDelegate.send(pluginResult, callbackId: callbackId)
             return
         }
@@ -53,21 +53,21 @@ class PrinterConnectionManager {
             let success = currentConnection?.open() ?? false
             
             if success {
-                let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "Connected to \(address)")
+                let pluginResult = CDVPluginResult(status: CDVCommandStatus.ok, messageAs: "Connected to \(address)")
                 commandDelegate.send(pluginResult, callbackId: callbackId)
             } else {
                 currentConnection = nil
-                let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: "Failed to open connection")
+                let pluginResult = CDVPluginResult(status: CDVCommandStatus.error, messageAs: "Failed to open connection")
                 commandDelegate.send(pluginResult, callbackId: callbackId)
             }
         } catch let err {
             currentConnection = nil
-            let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: "Connection failed: \(err.localizedDescription)")
+            let pluginResult = CDVPluginResult(status: CDVCommandStatus.error, messageAs: "Connection failed: \(err.localizedDescription)")
             commandDelegate.send(pluginResult, callbackId: callbackId)
         }
     }
     
-    private func createConnection(address: String, type: String, port: Int) throws -> ZebraPrinterConnection {
+    private func createConnection(address: String, type: String, port: Int) throws -> ZebraPrinterConnection & NSObjectProtocol {
         switch type.lowercased() {
         case "tcp", "network":
             return TcpPrinterConnection(address: address, andWithPort: Int(port))
@@ -90,12 +90,12 @@ class PrinterConnectionManager {
             conn.close()
             currentConnection = nil
             if let cbId = callbackId, let delegate = commandDelegate {
-                let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "Disconnected")
+                let pluginResult = CDVPluginResult(status: CDVCommandStatus.ok, messageAs: "Disconnected")
                 delegate.send(pluginResult, callbackId: cbId)
             }
         } else {
             if let cbId = callbackId, let delegate = commandDelegate {
-                let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "Already disconnected")
+                let pluginResult = CDVPluginResult(status: CDVCommandStatus.ok, messageAs: "Already disconnected")
                 delegate.send(pluginResult, callbackId: cbId)
             }
         }
@@ -103,7 +103,7 @@ class PrinterConnectionManager {
     
     func isConnected(callbackId: String, commandDelegate: CDVCommandDelegate) {
         let connected = currentConnection?.isConnected() ?? false
-        let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: ["connected": connected])
+        let pluginResult = CDVPluginResult(status: CDVCommandStatus.ok, messageAs: ["connected": connected])
         commandDelegate.send(pluginResult, callbackId: callbackId)
     }
 }

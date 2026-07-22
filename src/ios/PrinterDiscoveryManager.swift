@@ -56,7 +56,7 @@ class PrinterDiscoveryManager {
         }
         
         dispatchGroup.notify(queue: .global()) {
-            let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: foundPrinters)
+            let pluginResult = CDVPluginResult(status: CDVCommandStatus.ok, messageAs: foundPrinters)
             commandDelegate.send(pluginResult, callbackId: callbackId)
         }
     }
