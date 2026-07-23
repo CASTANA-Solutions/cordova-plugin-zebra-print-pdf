@@ -33,8 +33,7 @@ class PrinterDiscoveryManager {
             dispatchGroup.enter()
             
             DispatchQueue.global().async {
-                var error: NSError?
-                if let discoveredPrinters = NetworkDiscoverer.localBroadcast(&error) as? [DiscoveredPrinter] {
+                if let discoveredPrinters = (try? NetworkDiscoverer.localBroadcast()) as? [DiscoveredPrinter] {
                     for dp in discoveredPrinters {
                         var printer: [String: Any] = [:]
                         printer["address"] = dp.address
