@@ -13,3 +13,4 @@
 #import "SGD.h"
 #import "NetworkDiscoverer.h"
 #import "DiscoveredPrinter.h"
+#import "DiscoveredPrinterNetwork.h"
