@@ -8,7 +8,10 @@ interface DiscoverOptions {
 interface DiscoveredPrinter {
     address: string;
     name: string;
+    // 'usb' is only ever produced on Android (DiscoveredPrinterUsb); iOS has no USB discovery path.
     type: 'bluetooth' | 'network' | 'usb';
+    // Not populated for network-discovered printers on iOS - the bundled Zebra iOS SDK
+    // exposes no metadata (name/serial/model) for network results, only address/port/dnsName.
     serialNumber?: string;
     model?: string;
     isConnected: boolean;

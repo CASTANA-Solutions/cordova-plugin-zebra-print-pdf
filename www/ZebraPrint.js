@@ -31,6 +31,9 @@ var ZebraPrint = {
 
     /**
      * Discovers available Zebra printers via Bluetooth or Network.
+     * Note: on iOS, network-discovered printers only ever have `address`/`port` -
+     * the bundled iOS SDK exposes no name/serialNumber/model metadata for network results
+     * (unlike Bluetooth results, which come from EAAccessory and do have that data).
      * @param {Object|string} options Options object (e.g. { bluetooth: true }) or string ('bluetooth').
      * @param {Function} [success] Optional success callback.
      * @param {Function} [error] Optional error callback.
